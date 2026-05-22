@@ -64,16 +64,17 @@ body {
 
 /* Banner */
 .banner {
-  background:
-    linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent),
-    url("banner.jpg");
-  background-size: cover;
-  height: 180px;
-  margin: 20px;
-  border-radius: 15px;
-  display: flex;
-  align-items: flex-end;
-  padding: 20px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+.banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
 }
 
 .tarjeta {
