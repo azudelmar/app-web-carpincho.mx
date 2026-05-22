@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carpincho.mx | Confirmar Pedido</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet"
+    />
+    <style>
+      .checkout-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        border-bottom: 1px solid #1a1a1a;
+        position: sticky;
+        top: 0;
+        background: var(--bg-dark);
+        z-index: 10;
+      }
+      .checkout-header a {
+        color: white;
+        text-decoration: none;
+      }
+      .checkout-header h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+      }
+
+      .checkout-body {
+        padding: 20px;
+        padding-bottom: 120px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .seccion-titulo {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .input-group label {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+      }
+      .input-field {
+        background: #111;
+        border: 1px solid #2a2a2a;
+        border-radius: 10px;
+        padding: 13px 14px;
+        color: white;
+        font-size: 0.95rem;
+        width: 100%;
+        box-sizing: border-box;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .input-field:focus {
+        border-color: #555;
+      }
+      .input-field::placeholder {
+        color: #444;
+      }
+
+      /* Resumen de productos */
+      .resumen-card {
+        background: #111;
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      .resumen-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-bottom: 1px solid #1a1a1a;
+      }
+      .resumen-item:last-child {
+        border-bottom: none;
+      }
+
+      .resumen-item img {
+        width: 48px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 8px;
+        background: #1a1a1a;
+        flex-shrink: 0;
+      }
+
+      .resumen-item-info {
+        flex: 1;
+      }
+      .resumen-item-info p {
+        margin: 0;
+        font-size: 0.85rem;
+      }
+      .resumen-item-info .r-nombre {
+        font-weight: 600;
+      }
+      .resumen-item-info .r-detalle {
+        color: var(--text-dim);
+        font-size: 0.78rem;
+        margin-top: 2px;
+      }
+      .resumen-item-precio {
+        font-weight: 700;
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+
+      /* Totales */
+      .totales-card {
+        background: #111;
+        border-radius: 14px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .total-fila {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: var(--text-dim);
+      }
+      .total-fila.grande {
+        border-top: 1px solid #2a2a2a;
+        padding-top: 10px;
+        margin-top: 4px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: white;
+      }
+
+      /* Footer */
+      .checkout-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-dark);
+        padding: 14px 20px;
+        border-top: 1px solid #1a1a1a;
+      }
+      .btn-confirmar {
+        width: 100%;
+        background: white;
+        color: black;
+        border: none;
+        padding: 15px;
+        border-radius: 14px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: opacity 0.2s;
+      }
+      .btn-confirmar:hover {
+        opacity: 0.88;
+      }
+      .btn-confirmar:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #1a1a1a;
+        border: 1px solid #333;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        opacity: 0;
+        transition: all 0.3s;
+        z-index: 200;
+        white-space: nowrap;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="checkout-header">
+      <a href="carrito.html">
+        <span class="material-icons-outlined">arrow_back</span>
+      </a>
+      <h2>Confirmar Pedido</h2>
+    </div>
+
+    <div class="checkout-body" id="contenido-checkout">
+      <!-- Datos del cliente -->
+      <div>
+        <p class="seccion-titulo">Tus datos de entrega</p>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div class="input-group">
+            <label>Nombre completo</label>
+            <input
+              class="input-field"
+              id="campo-nombre"
+              type="text"
+              placeholder="¿Cómo te llamás?"
+            />
+          </div>
+          <div class="input-group">
+            <label>Ciudad / Municipio</label>
+            <input
+              class="input-field"
+              id="campo-ciudad"
+              type="text"
+              placeholder="Ej: Orizaba, Córdoba..."
+            />
+          </div>
+          <div class="input-group">
+            <label>Teléfono WhatsApp</label>
+            <input
+              class="input-field"
+              id="campo-telefono"
+              type="tel"
+              placeholder="10 dígitos"
+              maxlength="10"
+            />
+          </div>
+          <div class="input-group">
+            <label>Dirección de entrega</label>
+            <input
+              class="input-field"
+              id="campo-direccion"
+              type="text"
+              placeholder="Calle, número, colonia..."
+            />
+          </div>
+          <div class="input-group">
+            <label>Notas (opcional)</label>
+            <input
+              class="input-field"
+              id="campo-notas"
+              type="text"
+              placeholder="Referencias, instrucciones..."
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen productos -->
+      <div>
+        <p class="seccion-titulo">Tu pedido</p>
+        <div class="resumen-card" id="resumen-productos"></div>
+      </div>
+
+      <!-- Totales -->
+      <div class="totales-card" id="totales-card"></div>
+    </div>
+
+    <div class="checkout-footer">
+      <button class="btn-confirmar" id="btn-confirmar" disabled>
+        <span class="material-icons-outlined">check_circle</span>
+        Confirmar y Notificar
+      </button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+      import { supabase } from "./supabaseClient.js";
+
+      // ═══════════════════════════════════════════════════
+      // CONFIGURACIÓN DEL BOT WHATSAPP (Baileys)
+      // Después de desplegar en Railway, pega aquí la URL
+      const BOT_URL = "https://carpincho-bot-production.up.railway.app"; // ← URL de Railway
+      const API_SECRET = "carpincho2026secret"; // ← igual que en server.js
+      const WHATSAPP_DUENO = "521XXXXXXXXXX"; // ← respaldo manual
+
+      // ── DATOS BANCARIOS DEL DUEÑO ──────────────────────
+      const CLABE = "000000000000000000"; // ← CLABE de 18 dígitos del dueño
+      const NOMBRE_TITULAR = "Nombre del titular"; // ← nombre en la cuenta Nu
+      const BANCO = "Nu México";
+      // ═══════════════════════════════════════════════════
+
+      function toast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(t._t);
+        t._t = setTimeout(() => t.classList.remove("show"), 3000);
+      }
+
+      function obtenerCarrito() {
+        return JSON.parse(localStorage.getItem("carrito") || "[]");
+      }
+
+      const carrito = obtenerCarrito();
+
+      // ── RENDERIZAR RESUMEN ──
+      function renderizarResumen() {
+        const contenedor = document.getElementById("resumen-productos");
+        const totalesEl = document.getElementById("totales-card");
+
+        if (carrito.length === 0) {
+          window.location.href = "carrito.html";
+          return;
+        }
+
+        contenedor.innerHTML = carrito
+          .map(
+            (item) => `
+          <div class="resumen-item">
+            <img src="${item.imagen_url}" alt="${item.nombre}" />
+            <div class="resumen-item-info">
+              <p class="r-nombre">${item.nombre}</p>
+              <p class="r-detalle">Talla: ${item.talla}${item.color ? " · " + item.color : ""} · x${item.cantidad}</p>
+            </div>
+            <span class="resumen-item-precio">$${(item.precio * item.cantidad).toLocaleString("es-MX")}</span>
+          </div>
+        `,
+          )
+          .join("");
+
+        const subtotal = carrito.reduce((s, i) => s + i.precio * i.cantidad, 0);
+        totalesEl.innerHTML = `
+          <div class="total-fila"><span>Subtotal</span><span>$${subtotal.toLocaleString("es-MX")} MXN</span></div>
+          <div class="total-fila"><span>Envío</span><span>Por acordar</span></div>
+          <div class="total-fila grande"><span>Total</span><span>$${subtotal.toLocaleString("es-MX")} MXN</span></div>
+        `;
+      }
+
+      // ── HABILITAR BOTÓN CUANDO LOS CAMPOS ESTÉN LLENOS ──
+      [
+        "campo-nombre",
+        "campo-ciudad",
+        "campo-telefono",
+        "campo-direccion",
+      ].forEach((id) => {
+        document
+          .getElementById(id)
+          .addEventListener("input", validarFormulario);
+      });
+
+      function validarFormulario() {
+        const nombre = document.getElementById("campo-nombre").value.trim();
+        const ciudad = document.getElementById("campo-ciudad").value.trim();
+        const tel = document.getElementById("campo-telefono").value.trim();
+        const dir = document.getElementById("campo-direccion").value.trim();
+        document.getElementById("btn-confirmar").disabled = !(
+          nombre &&
+          ciudad &&
+          tel.length >= 10 &&
+          dir
+        );
+      }
+
+      // ── CONFIRMAR PEDIDO ──
+      document
+        .getElementById("btn-confirmar")
+        .addEventListener("click", async () => {
+          const btn = document.getElementById("btn-confirmar");
+          btn.disabled = true;
+          btn.innerHTML = `<span class="material-icons-outlined">hourglass_empty</span> Guardando...`;
+
+          const nombre = document.getElementById("campo-nombre").value.trim();
+          const ciudad = document.getElementById("campo-ciudad").value.trim();
+          const telefono = document
+            .getElementById("campo-telefono")
+            .value.trim();
+          const direccion = document
+            .getElementById("campo-direccion")
+            .value.trim();
+          const notas = document.getElementById("campo-notas").value.trim();
+          const subtotal = carrito.reduce(
+            (s, i) => s + i.precio * i.cantidad,
+            0,
+          );
+
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          // ── GUARDAR EN SUPABASE ──
+          const { data: pedido, error } = await supabase
+            .from("pedidos")
+            .insert({
+              user_id: user?.id || null,
+              nombre_cliente: nombre,
+              ciudad,
+              telefono,
+              direccion,
+              notas,
+              productos: JSON.stringify(carrito),
+              total: subtotal,
+              estado: "pendiente",
+              created_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error(error);
+            toast("❌ Error al guardar el pedido, intenta de nuevo");
+            btn.disabled = false;
+            btn.innerHTML = `<span class="material-icons-outlined">check_circle</span> Confirmar y Notificar`;
+            return;
+          }
+
+          // ── REDUCIR STOCK DE CADA PRODUCTO ──
+          for (const item of carrito) {
+            try {
+              // Obtener stock actual
+              const { data: prod } = await supabase
+                .from("productos")
+                .select("stock")
+                .eq("id", item.id)
+                .single();
+
+              if (prod && prod.stock !== null && prod.stock !== undefined) {
+                const nuevoStock = Math.max(0, prod.stock - item.cantidad);
+                await supabase
+                  .from("productos")
+                  .update({ stock: nuevoStock })
+                  .eq("id", item.id);
+              }
+            } catch (e) {
+              console.warn(
+                "Error actualizando stock de",
+                item.nombre,
+                e.message,
+              );
+            }
+          }
+
+          // ── CONSTRUIR MENSAJE ──
+          const itemsTexto = carrito
+            .map(
+              (i) =>
+                `• ${i.nombre} (Talla: ${i.talla}${i.color ? ", " + i.color : ""}) x${i.cantidad} = $${(i.precio * i.cantidad).toLocaleString("es-MX")}`,
+            )
+            .join("\n");
+
+          const pedidoId =
+            pedido.id?.toString().slice(0, 8).toUpperCase() || "NUEVO";
+
+          const mensajeTexto = `🛍️ NUEVO PEDIDO - Carpincho.mx
+
+👤 Cliente: ${nombre}
+📍 Ciudad: ${ciudad}
+📞 Teléfono: ${telefono}
+🏠 Dirección: ${direccion}
+${notas ? "📝 Notas: " + notas : ""}
+Productos:
+${itemsTexto}
+
+💰 Total: $${subtotal.toLocaleString("es-MX")} MXN
+🆔 Pedido #${pedidoId}`;
+
+          // ── ENVIAR VÍA BOT BAILEYS ──
+          btn.innerHTML = `<span class="material-icons-outlined">hourglass_empty</span> Enviando notificación...`;
+
+          let botOk = false;
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 10000);
+            const resp = await fetch(`${BOT_URL}/notificar`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "x-api-secret": API_SECRET,
+              },
+              signal: controller.signal,
+              body: JSON.stringify({
+                nombre,
+                ciudad,
+                telefono,
+                direccion,
+                notas,
+                productos: carrito,
+                total: subtotal,
+                pedidoId: pedido.id,
+              }),
+            });
+            clearTimeout(timeout);
+            botOk = resp.ok;
+          } catch (e) {
+            console.warn("Bot no respondió:", e.message);
+            botOk = false;
+          }
+
+          // Limpiar carrito
+          localStorage.removeItem("carrito");
+
+          // URL de respaldo WhatsApp
+          const mensajeWA = encodeURIComponent(mensajeTexto);
+          const urlWA = `https://wa.me/${WHATSAPP_DUENO}?text=${mensajeWA}`;
+
+          // ── PANTALLA DE ÉXITO ──
+          document.querySelector(".checkout-footer").style.display = "none";
+          document.getElementById("contenido-checkout").innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;gap:18px;padding:24px 20px 40px;text-align:center;">
+
+            <!-- Ícono de éxito -->
+            <div style="width:76px;height:76px;background:#0a1f0a;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-icons-outlined" style="font-size:2.4rem;color:#00cc66;">check_circle</span>
+            </div>
+
+            <h2 style="margin:0;font-size:1.5rem;font-weight:800;">¡Pedido confirmado!</h2>
+            <p style="color:var(--text-dim);margin:0;line-height:1.7;max-width:300px;font-size:0.9rem;">
+              Tu pedido <strong style="color:white;">#${pedidoId}</strong> fue registrado.
+              ${botOk ? "El dueño ya recibió la notificación. ✅" : "Notifica al dueño con el botón de abajo."}
+            </p>
+
+            <!-- TARJETA DE PAGO -->
+            <div style="background:#111;border-radius:16px;padding:20px;width:100%;max-width:360px;text-align:left;border:1px solid #222;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <div style="width:36px;height:36px;background:#820ad1;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <span style="color:white;font-weight:900;font-size:1rem;">N</span>
+                </div>
+                <div>
+                  <p style="margin:0;font-size:0.75rem;color:var(--text-dim);">Realiza tu pago a</p>
+                  <p style="margin:0;font-size:0.95rem;font-weight:700;">${BANCO}</p>
+                </div>
+              </div>
+
+              <!-- Titular -->
+              <div style="margin-bottom:12px;">
+                <p style="margin:0 0 3px;font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;">Titular</p>
+                <p style="margin:0;font-size:0.95rem;font-weight:600;">${NOMBRE_TITULAR}</p>
+              </div>
+
+              <!-- CLABE con botón copiar -->
+              <div style="margin-bottom:16px;">
+                <p style="margin:0 0 6px;font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.8px;">CLABE Interbancaria</p>
+                <div style="display:flex;align-items:center;gap:10px;background:#1a1a1a;border-radius:10px;padding:12px 14px;">
+                  <span id="clabe-texto" style="font-size:1rem;font-weight:700;letter-spacing:1.5px;flex:1;font-family:'Courier New',monospace;">${CLABE}</span>
+                  <button id="btn-copiar-clabe" onclick="
+                    navigator.clipboard.writeText('${CLABE}');
+                    this.innerHTML='<span class=\\'material-icons-outlined\\' style=\\'font-size:1rem;color:#00cc66;\\'>check</span>';
+                    setTimeout(()=>{ this.innerHTML='<span class=\\'material-icons-outlined\\' style=\\'font-size:1rem;\\'>content_copy</span>'; }, 2000);
+                  " style="background:none;border:none;color:var(--text-dim);cursor:pointer;padding:2px;display:flex;align-items:center;">
+                    <span class="material-icons-outlined" style="font-size:1rem;">content_copy</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Total a pagar -->
+              <div style="background:#0a1a0a;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:0.85rem;color:var(--text-dim);">Total a transferir</span>
+                <span style="font-size:1.1rem;font-weight:800;color:#00cc66;">$${subtotal.toLocaleString("es-MX")} MXN</span>
+              </div>
+
+              <p style="margin:12px 0 0;font-size:0.75rem;color:var(--text-dim);text-align:center;line-height:1.5;">
+                ⚠️ Incluye el número de pedido <strong style="color:white;">#${pedidoId}</strong> en el concepto de la transferencia
+              </p>
+            </div>
+
+            <!-- Botón WhatsApp -->
+            <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:8px;">
+              <p style="margin:0;font-size:0.78rem;color:var(--text-dim);">
+                ${botOk ? "¿Necesitas contactar al dueño?" : "⚠️ Notifica tu pedido manualmente:"}
+              </p>
+              <a href="${urlWA}" target="_blank"
+                style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:white;padding:13px;border-radius:10px;font-weight:700;text-decoration:none;font-size:0.9rem;">
+                <span class="material-icons-outlined" style="font-size:1.1rem;">chat</span>
+                Contactar al dueño por WhatsApp
+              </a>
+            </div>
+
+            <!-- Resumen -->
+            <div style="background:#111;border-radius:14px;padding:14px 18px;width:100%;max-width:360px;text-align:left;display:flex;flex-direction:column;gap:5px;">
+              <p style="margin:0;font-size:0.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;">Resumen del pedido</p>
+              <p style="margin:0;font-size:0.88rem;">📍 ${ciudad}</p>
+              <p style="margin:0;font-size:0.88rem;">📞 ${telefono}</p>
+              <p style="margin:0;font-size:0.88rem;">🏠 ${direccion}</p>
+              <p style="margin:0;font-size:0.95rem;font-weight:700;color:white;margin-top:4px;">💰 $${subtotal.toLocaleString("es-MX")} MXN</p>
+            </div>
+
+            <a href="index.html" style="background:white;color:black;padding:13px 36px;border-radius:30px;font-weight:700;text-decoration:none;font-size:0.9rem;">
+              Seguir comprando
+            </a>
+          </div>`;
+        });
+
+      renderizarResumen();
+    </script>
+  </body>
+</html>

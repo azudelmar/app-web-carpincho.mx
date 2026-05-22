@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carpincho.mx | Detalle</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background: var(--bg-dark);
+        color: var(--text-main);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+      }
+
+      /* ── TOPBAR ── */
+      .detalle-topbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 50;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: rgba(10,10,10,0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-bottom: 1px solid #1a1a1a;
+      }
+
+      .topbar-btn {
+        background: rgba(255,255,255,0.08);
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s;
+      }
+      .topbar-btn:hover { background: rgba(255,255,255,0.18); }
+      .topbar-btn.fav-activo .material-icons-outlined { color: #e05555; }
+
+      /* ══════════════════════════════
+         LAYOUT PRINCIPAL — DOS COLUMNAS
+      ══════════════════════════════ */
+      .detalle-layout {
+        display: flex;
+        min-height: 100vh;
+        padding-top: 62px;
+      }
+
+      /* ── LADO IZQUIERDO: IMAGEN ── */
+      .detalle-lado-imagen {
+        position: sticky;
+        top: 62px;
+        width: 50%;
+        height: calc(100vh - 62px);
+        background: #111;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      /* Imagen principal */
+      .imagen-principal-wrapper {
+        position: relative;
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #img-principal {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: opacity 0.25s;
+      }
+
+      /* Flechas */
+      .flecha-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.55);
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        z-index: 5;
+        transition: background 0.2s;
+        backdrop-filter: blur(4px);
+      }
+      .flecha-nav:hover { background: rgba(0,0,0,0.82); }
+      .flecha-nav.izq { left: 12px; }
+      .flecha-nav.der { right: 12px; }
+      .flecha-nav:disabled { opacity: 0.2; cursor: default; }
+
+      /* Puntos indicadores */
+      .indicadores {
+        position: absolute;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 6px;
+      }
+      .punto {
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.35);
+        transition: background 0.2s, transform 0.2s;
+        cursor: pointer;
+      }
+      .punto.activo { background: white; transform: scale(1.35); }
+
+      /* Miniaturas abajo de la imagen */
+      .miniaturas-fila {
+        display: flex;
+        gap: 6px;
+        padding: 10px 12px;
+        overflow-x: auto;
+        background: #0d0d0d;
+        scrollbar-width: none;
+        flex-shrink: 0;
+      }
+      .miniaturas-fila::-webkit-scrollbar { display: none; }
+
+      .miniatura {
+        width: 52px; height: 64px;
+        object-fit: cover;
+        border-radius: 7px;
+        cursor: pointer;
+        opacity: 0.45;
+        border: 2px solid transparent;
+        flex-shrink: 0;
+        transition: opacity 0.2s, border-color 0.2s;
+      }
+      .miniatura.activa { opacity: 1; border-color: white; }
+
+      /* ── LADO DERECHO: INFO ── */
+      .detalle-lado-info {
+        width: 50%;
+        min-height: calc(100vh - 62px);
+        padding: 28px 28px 120px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        border-left: 1px solid #1a1a1a;
+      }
+
+      .info-nombre {
+        font-size: 1.5rem;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+
+      .info-precio {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+      }
+
+      .info-categoria {
+        font-size: 0.82rem;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .info-descripcion {
+        font-size: 0.9rem;
+        color: #bbb;
+        line-height: 1.7;
+        padding: 14px;
+        background: #111;
+        border-radius: 10px;
+        border-left: 3px solid #333;
+      }
+
+      /* Divisor */
+      .divisor {
+        border: none;
+        border-top: 1px solid #1a1a1a;
+      }
+
+      /* Sección opciones */
+      .opcion-seccion { display: flex; flex-direction: column; gap: 10px; }
+      .opcion-label { font-size: 0.9rem; font-weight: 700; color: white; }
+
+      .opcion-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .opcion-chip {
+        background: #1a1a1a;
+        border: 1.5px solid #333;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.88rem;
+        font-weight: 500;
+        transition: all 0.15s;
+      }
+      .opcion-chip:hover { border-color: #666; }
+      .opcion-chip.selected {
+        background: white;
+        color: black;
+        border-color: white;
+        font-weight: 700;
+      }
+
+      /* Cantidad */
+      .cantidad-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .cant-btn {
+        background: #1a1a1a;
+        border: 1.5px solid #333;
+        color: white;
+        width: 38px; height: 38px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 0.15s;
+      }
+      .cant-btn:hover { background: #2a2a2a; }
+      .cant-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+      .cant-numero { font-size: 1rem; font-weight: 700; min-width: 22px; text-align: center; }
+
+      /* Botón agregar */
+      .btn-agregar-carrito {
+        width: 100%;
+        background: white;
+        color: black;
+        border: none;
+        padding: 15px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: opacity 0.2s;
+        margin-top: auto;
+      }
+      .btn-agregar-carrito:hover { opacity: 0.88; }
+      .btn-agregar-carrito:disabled { opacity: 0.35; cursor: not-allowed; }
+
+      /* ══════════════════════════════
+         MÓVIL: layout vertical
+      ══════════════════════════════ */
+      @media (max-width: 700px) {
+        .detalle-layout {
+          flex-direction: column;
+          padding-bottom: 100px;
+        }
+
+        .detalle-lado-imagen {
+          position: relative;
+          top: 0;
+          width: 100%;
+          height: 50vh;
+        }
+
+        .detalle-lado-info {
+          width: 100%;
+          min-height: auto;
+          padding: 20px 18px 20px;
+          border-left: none;
+          border-top: 1px solid #1a1a1a;
+        }
+
+        .info-nombre { font-size: 1.25rem; }
+        .info-precio { font-size: 1.4rem; }
+
+        /* En móvil el botón va fijo abajo */
+        .btn-agregar-carrito {
+          position: fixed;
+          bottom: 0; left: 0; right: 0;
+          border-radius: 0;
+          padding: 18px;
+          z-index: 40;
+        }
+      }
+
+      /* Stock badges */
+      .stock-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+      }
+      .stock-badge .material-icons-outlined { font-size: 1rem; }
+      .stock-badge.disponible { background: #0a1f0a; color: #00cc66; }
+      .stock-badge.poco       { background: #1f1500; color: #ffaa00; }
+      .stock-badge.agotado    { background: #1a0000; color: #ff4444; }
+
+      /* Toast */
+      .toast {
+        position: fixed;
+        bottom: 80px; left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #1a1a1a; border: 1px solid #333; color: white;
+        padding: 11px 22px; border-radius: 30px; font-size: 0.88rem;
+        opacity: 0; transition: all 0.3s; z-index: 200; white-space: nowrap;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      /* Loading / error */
+      .estado-pantalla {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        min-height: 80vh; gap: 14px;
+        color: var(--text-dim); text-align: center; padding: 30px;
+      }
+      .estado-pantalla .material-icons-outlined { font-size: 3rem; }
+    </style>
+  </head>
+  <body>
+
+    <!-- Topbar fija -->
+    <div class="detalle-topbar">
+      <button class="topbar-btn" onclick="history.back()">
+        <span class="material-icons-outlined">chevron_left</span>
+      </button>
+      <span style="font-size:0.9rem;font-weight:600;color:#888;" id="topbar-nombre"></span>
+      <button class="topbar-btn" id="btn-fav-detalle">
+        <span class="material-icons-outlined">favorite_border</span>
+      </button>
+    </div>
+
+    <!-- Contenido dinámico -->
+    <div id="contenido-detalle">
+      <div class="estado-pantalla">
+        <span class="material-icons-outlined">hourglass_empty</span>
+        <p>Cargando producto...</p>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+      import { supabase } from "./supabaseClient.js";
+
+      const params = new URLSearchParams(window.location.search);
+      const productoId = params.get("id");
+
+      let producto = null;
+      let tallaSeleccionada = null;
+      let colorSeleccionado = null;
+      let cantidad = 1;
+      let imagenes = [];
+      let imagenActual = 0;
+      let esFavorito = false;
+      let usuarioActual = null;
+
+      // ── TOAST ──
+      function toast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(t._t);
+        t._t = setTimeout(() => t.classList.remove("show"), 2500);
+      }
+
+      // ── SESIÓN Y FAVORITOS ──
+      async function cargarSesionYFav() {
+        const { data: { user } } = await supabase.auth.getUser();
+        usuarioActual = user;
+        if (!user || !productoId) return;
+        const { data } = await supabase.from("favoritos")
+          .select("id").eq("user_id", user.id).eq("producto_id", productoId).maybeSingle();
+        esFavorito = !!data;
+        actualizarBtnFav();
+      }
+
+      function actualizarBtnFav() {
+        const btn = document.getElementById("btn-fav-detalle");
+        if (!btn) return;
+        btn.classList.toggle("fav-activo", esFavorito);
+        btn.querySelector(".material-icons-outlined").textContent =
+          esFavorito ? "favorite" : "favorite_border";
+      }
+
+      document.getElementById("btn-fav-detalle").addEventListener("click", async () => {
+        if (!usuarioActual) {
+          toast("⚠️ Inicia sesión para guardar favoritos");
+          setTimeout(() => { window.location.href = "perfil.html"; }, 1500);
+          return;
+        }
+        if (esFavorito) {
+          await supabase.from("favoritos").delete()
+            .eq("user_id", usuarioActual.id).eq("producto_id", productoId);
+          esFavorito = false;
+          toast("Eliminado de favoritos");
+        } else {
+          await supabase.from("favoritos").insert({
+            user_id: usuarioActual.id, producto_id: productoId,
+            nombre: producto.nombre, precio: producto.precio,
+            imagen_url: imagenes[0], categoria: producto.categoria || "",
+          });
+          esFavorito = true;
+          toast("❤️ Agregado a favoritos");
+        }
+        actualizarBtnFav();
+      });
+
+      // ── CAMBIAR IMAGEN ──
+      function cambiarImagen(idx) {
+        imagenActual = idx;
+        const img = document.getElementById("img-principal");
+        if (img) {
+          img.style.opacity = "0";
+          setTimeout(() => { img.src = imagenes[idx]; img.style.opacity = "1"; }, 120);
+        }
+        document.querySelectorAll(".miniatura").forEach((m, i) => m.classList.toggle("activa", i === idx));
+        document.querySelectorAll(".punto").forEach((p, i) => p.classList.toggle("activo", i === idx));
+        const btnIzq = document.getElementById("flecha-izq");
+        const btnDer = document.getElementById("flecha-der");
+        if (btnIzq) btnIzq.disabled = idx === 0;
+        if (btnDer) btnDer.disabled = idx === imagenes.length - 1;
+      }
+
+      // ── VALIDAR BOTÓN con stock ──
+      function validarBoton() {
+        const tieneTalla = !producto._requiereTalla || tallaSeleccionada !== null;
+        const tieneColor = !producto._requiereColor || colorSeleccionado !== null;
+        const stock = producto.stock;
+        const hayStock = stock === null || stock === undefined || stock > 0;
+        const btn = document.getElementById("btn-agregar");
+        if (!btn) return;
+
+        if (!hayStock) {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="material-icons-outlined">remove_shopping_cart</span> Agotado';
+          btn.style.cssText = "background:#1a1a1a;color:#555;border:1px solid #333;cursor:not-allowed;";
+        } else if (!(tieneTalla && tieneColor)) {
+          btn.disabled = true;
+          btn.innerHTML = '<span class="material-icons-outlined">shopping_cart</span> Selecciona opciones';
+          btn.style.cssText = "";
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = '<span class="material-icons-outlined">shopping_cart</span> Agregar al Carrito';
+          btn.style.cssText = "";
+        }
+      }
+
+      // ── CARGAR PRODUCTO ──
+      async function cargarProducto() {
+        if (!productoId) { mostrarError("ID de producto no encontrado."); return; }
+
+        const { data, error } = await supabase
+          .from("productos").select("*").eq("id", productoId).single();
+
+        if (error || !data) { mostrarError("No se pudo cargar el producto."); return; }
+        producto = data;
+
+        // Topbar nombre
+        document.getElementById("topbar-nombre").textContent = producto.nombre;
+
+        // Normalizar imágenes
+        if (Array.isArray(producto.imagenes)) imagenes = producto.imagenes;
+        else if (producto.imagenes) imagenes = producto.imagenes.split(",").map(s => s.trim());
+        else if (producto.imagen_url) imagenes = [producto.imagen_url];
+
+        // Normalizar tallas
+        let tallas = [];
+        if (Array.isArray(producto.tallas)) tallas = producto.tallas;
+        else if (producto.tallas) tallas = producto.tallas.split(",").map(s => s.trim());
+        else if (producto.talla) tallas = [producto.talla];
+
+        // Normalizar colores
+        let colores = [];
+        if (Array.isArray(producto.colores)) colores = producto.colores;
+        else if (producto.colores) colores = producto.colores.split(",").map(s => s.trim());
+
+        // Preseleccionar si hay solo uno
+        producto._requiereTalla = tallas.length > 1;
+        producto._requiereColor = colores.length > 1;
+        if (tallas.length === 1) tallaSeleccionada = tallas[0];
+        if (colores.length === 1) colorSeleccionado = colores[0];
+        if (tallas.length === 0) tallaSeleccionada = "Unitalla";
+
+        // ── HTML ──
+        const seccionTallas = tallas.length > 0 ? `
+          <div class="opcion-seccion">
+            <span class="opcion-label">Talla</span>
+            <div class="opcion-chips">
+              ${tallas.map((t, i) => `
+                <button class="opcion-chip ${tallas.length === 1 ? "selected" : ""}" data-talla="${t}">${t}</button>
+              `).join("")}
+            </div>
+          </div>` : "";
+
+        const seccionColores = colores.length > 0 ? `
+          <div class="opcion-seccion">
+            <span class="opcion-label">Color</span>
+            <div class="opcion-chips">
+              ${colores.map(c => `
+                <button class="opcion-chip ${colores.length === 1 ? "selected" : ""}" data-color="${c}">${c}</button>
+              `).join("")}
+            </div>
+          </div>` : "";
+
+        const tieneMasImagenes = imagenes.length > 1;
+
+        document.getElementById("contenido-detalle").innerHTML = `
+          <div class="detalle-layout">
+
+            <!-- ── IZQUIERDA: IMAGEN ── -->
+            <div class="detalle-lado-imagen">
+              <div class="imagen-principal-wrapper">
+                <img id="img-principal" src="${imagenes[0]}" alt="${producto.nombre}" />
+
+                ${tieneMasImagenes ? `
+                <button class="flecha-nav izq" id="flecha-izq" disabled>
+                  <span class="material-icons-outlined" style="font-size:1.2rem;">chevron_left</span>
+                </button>
+                <button class="flecha-nav der" id="flecha-der">
+                  <span class="material-icons-outlined" style="font-size:1.2rem;">chevron_right</span>
+                </button>
+                <div class="indicadores">
+                  ${imagenes.map((_, i) => `<div class="punto ${i===0?"activo":""}" data-idx="${i}"></div>`).join("")}
+                </div>` : ""}
+              </div>
+
+              ${tieneMasImagenes ? `
+              <div class="miniaturas-fila">
+                ${imagenes.map((img, i) => `
+                  <img class="miniatura ${i===0?"activa":""}" src="${img}" data-idx="${i}" alt="foto ${i+1}" />
+                `).join("")}
+              </div>` : ""}
+            </div>
+
+            <!-- ── DERECHA: INFO ── -->
+            <div class="detalle-lado-info">
+
+              <div>
+                ${producto.categoria ? `<p class="info-categoria">${producto.categoria}</p>` : ""}
+                <h1 class="info-nombre">${producto.nombre}</h1>
+                <p class="info-precio">$${Number(producto.precio).toLocaleString("es-MX")} MXN</p>
+              </div>
+
+              ${producto.descripcion ? `
+              <p class="info-descripcion">${producto.descripcion}</p>` : ""}
+
+              <hr class="divisor" />
+
+              ${seccionTallas}
+              ${seccionColores}
+
+              <div class="opcion-seccion">
+                <span class="opcion-label">Cantidad</span>
+                <div class="cantidad-row">
+                  <button class="cant-btn" id="cant-menos" disabled>−</button>
+                  <span class="cant-numero" id="cant-num">1</span>
+                  <button class="cant-btn" id="cant-mas">+</button>
+                </div>
+              </div>
+
+              <hr class="divisor" />
+
+              <button class="btn-agregar-carrito" id="btn-agregar" ${tallas.length > 1 || colores.length > 1 ? "disabled" : ""}>
+                <span class="material-icons-outlined">shopping_cart</span>
+                Agregar al Carrito
+              </button>
+
+            </div>
+          </div>
+        `;
+
+        // ── EVENTOS TALLAS ──
+        document.querySelectorAll("[data-talla]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("[data-talla]").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            tallaSeleccionada = btn.dataset.talla;
+            validarBoton();
+          });
+        });
+
+        // ── EVENTOS COLORES ──
+        document.querySelectorAll("[data-color]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll("[data-color]").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            colorSeleccionado = btn.dataset.color;
+            validarBoton();
+          });
+        });
+
+        // ── CANTIDAD ──
+        const maxStock = (producto.stock !== null && producto.stock !== undefined) ? producto.stock : 99;
+        document.getElementById("cant-mas").addEventListener("click", () => {
+          if (cantidad < maxStock) {
+            cantidad++;
+            document.getElementById("cant-num").textContent = cantidad;
+            document.getElementById("cant-menos").disabled = cantidad <= 1;
+            document.getElementById("cant-mas").disabled = cantidad >= maxStock;
+          }
+        });
+        document.getElementById("cant-menos").addEventListener("click", () => {
+          if (cantidad > 1) {
+            cantidad--;
+            document.getElementById("cant-num").textContent = cantidad;
+            document.getElementById("cant-menos").disabled = cantidad <= 1;
+          }
+        });
+
+        // ── FLECHAS ──
+        if (tieneMasImagenes) {
+          document.getElementById("flecha-izq")?.addEventListener("click", () => {
+            if (imagenActual > 0) cambiarImagen(imagenActual - 1);
+          });
+          document.getElementById("flecha-der")?.addEventListener("click", () => {
+            if (imagenActual < imagenes.length - 1) cambiarImagen(imagenActual + 1);
+          });
+
+          // Puntos
+          document.querySelectorAll(".punto").forEach(p => {
+            p.addEventListener("click", () => cambiarImagen(parseInt(p.dataset.idx)));
+          });
+
+          // Miniaturas
+          document.querySelectorAll(".miniatura").forEach(m => {
+            m.addEventListener("click", () => cambiarImagen(parseInt(m.dataset.idx)));
+          });
+
+          // Swipe táctil
+          const wrapper = document.querySelector(".imagen-principal-wrapper");
+          let touchStartX = 0;
+          wrapper.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+          wrapper.addEventListener("touchend", e => {
+            const diff = touchStartX - e.changedTouches[0].clientX;
+            if (Math.abs(diff) > 40) {
+              if (diff > 0 && imagenActual < imagenes.length - 1) cambiarImagen(imagenActual + 1);
+              if (diff < 0 && imagenActual > 0) cambiarImagen(imagenActual - 1);
+            }
+          }, { passive: true });
+        }
+
+        // ── AGREGAR AL CARRITO ──
+        document.getElementById("btn-agregar").addEventListener("click", () => {
+          const carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
+          const key = `${producto.id}-${tallaSeleccionada || "unitalla"}-${colorSeleccionado || "unico"}`;
+          const existente = carrito.find(i => i.key === key);
+
+          if (existente) {
+            existente.cantidad += cantidad;
+          } else {
+            carrito.push({
+              key, id: producto.id,
+              nombre: producto.nombre,
+              precio: producto.precio,
+              imagen_url: imagenes[0],
+              talla: tallaSeleccionada || "Unitalla",
+              color: colorSeleccionado || null,
+              cantidad,
+            });
+          }
+
+          localStorage.setItem("carrito", JSON.stringify(carrito));
+          toast(`✓ ${cantidad > 1 ? cantidad + "x " : ""}Agregado al carrito`);
+        });
+      }
+
+      function mostrarError(msg) {
+        document.getElementById("contenido-detalle").innerHTML = `
+          <div class="estado-pantalla" style="padding-top:80px;">
+            <span class="material-icons-outlined">error_outline</span>
+            <p>${msg}</p>
+            <a href="index.html" style="color:white;margin-top:8px;">← Volver al inicio</a>
+          </div>`;
+      }
+
+      cargarSesionYFav();
+      cargarProducto();
+    </script>
+  </body>
+</html>

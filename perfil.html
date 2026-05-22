@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carpincho.mx | Perfil</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <style>
+      /* ── AUTH ── */
+      .auth-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px 24px 100px;
+      }
+      .auth-logo { display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:36px; }
+      .auth-logo img { width:70px;border-radius:14px; }
+      .auth-logo h1 { font-size:1.6rem;font-weight:800;margin:0; }
+      .auth-logo p { font-size:0.85rem;color:var(--text-dim);margin:0; }
+      .auth-tabs { display:flex;background:#111;border-radius:12px;padding:4px;margin-bottom:28px;width:100%;max-width:380px; }
+      .auth-tab { flex:1;padding:10px;text-align:center;border-radius:10px;cursor:pointer;font-size:0.9rem;font-weight:600;color:var(--text-dim);transition:all 0.2s;border:none;background:none; }
+      .auth-tab.active { background:white;color:black; }
+      .auth-form { width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px; }
+      .input-group { display:flex;flex-direction:column;gap:6px; }
+      .input-group label { font-size:0.82rem;color:var(--text-dim);font-weight:500; }
+      .input-field { background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:13px 14px;color:white;font-size:0.95rem;width:100%;box-sizing:border-box;transition:border-color 0.2s;outline:none; }
+      .input-field:focus { border-color:#555; }
+      .input-field::placeholder { color:#444; }
+      .btn-auth { background:white;color:black;border:none;padding:15px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-top:6px;transition:opacity 0.2s; }
+      .btn-auth:hover { opacity:0.85; }
+      .btn-auth:disabled { opacity:0.4;cursor:not-allowed; }
+      .auth-error { color:#ff6b6b;font-size:0.85rem;text-align:center;min-height:20px; }
+
+      /* ── PERFIL PRINCIPAL ── */
+      .perfil-container { padding-bottom:100px; }
+      .perfil-header { display:flex;align-items:center;gap:15px;padding:20px;position:sticky;top:0;background:var(--bg-dark);z-index:10;border-bottom:1px solid #111; }
+      .perfil-header a { color:white;text-decoration:none; }
+      .perfil-header h2 { margin:0;font-size:1.4rem;font-weight:700; }
+
+      /* Avatar con foto */
+      .usuario-info { display:flex;align-items:center;gap:16px;padding:24px 20px 20px; }
+      .avatar-wrapper { position:relative;flex-shrink:0; }
+      .avatar-circulo { width:72px;height:72px;background:#1e1e1e;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden; }
+      .avatar-circulo img { width:100%;height:100%;object-fit:cover; }
+      .avatar-circulo .material-icons-outlined { font-size:2rem;color:#888; }
+      .btn-cambiar-foto { position:absolute;bottom:0;right:0;background:#333;border:none;color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer; }
+      .btn-cambiar-foto .material-icons-outlined { font-size:0.85rem; }
+      #input-foto { display:none; }
+      .usuario-texto h3 { margin:0 0 4px 0;font-size:1.15rem;font-weight:700; }
+      .usuario-texto p { margin:0;font-size:0.85rem;color:var(--text-dim); }
+
+      /* Stats */
+      .stats-bar { display:flex;background:#111;border-radius:14px;margin:0 20px 20px;overflow:hidden; }
+      .stat-item { flex:1;display:flex;flex-direction:column;align-items:center;padding:16px 10px;gap:4px;border-right:1px solid #1e1e1e;cursor:pointer;transition:background 0.15s; }
+      .stat-item:last-child { border-right:none; }
+      .stat-item:hover { background:#1a1a1a; }
+      .stat-numero { font-size:1.4rem;font-weight:800;color:white; }
+      .stat-label { font-size:0.75rem;color:var(--text-dim); }
+
+      /* Menú */
+      .menu-lista { background:#111;border-radius:14px;margin:0 20px;overflow:hidden; }
+      .menu-item { display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid #1a1a1a;cursor:pointer;transition:background 0.15s;text-decoration:none;color:white; }
+      .menu-item:last-child { border-bottom:none; }
+      .menu-item:hover { background:#1a1a1a; }
+      .menu-item .material-icons-outlined { font-size:1.3rem;color:#888;flex-shrink:0; }
+      .menu-item span.label { flex:1;font-size:0.95rem;font-weight:500; }
+      .menu-item .chevron { font-size:1.1rem;color:#444; }
+
+      .btn-cerrar-sesion { display:flex;align-items:center;justify-content:center;gap:10px;margin:16px 20px 0;background:#111;border:none;color:white;padding:16px;border-radius:14px;font-size:0.95rem;font-weight:600;cursor:pointer;width:calc(100% - 40px);transition:background 0.2s; }
+      .btn-cerrar-sesion:hover { background:#1a1a1a; }
+      .btn-cerrar-sesion .material-icons-outlined { color:#888;font-size:1.2rem; }
+      .perfil-footer { text-align:center;padding:24px 20px 10px; }
+      .perfil-footer p { margin:0;font-size:0.8rem;color:#444; }
+      .perfil-footer a { font-size:0.75rem;color:#7a9bb5;text-decoration:none; }
+
+      /* ── SUBPANTALLAS ── */
+      .subpantalla { padding-bottom:100px; }
+      .sub-header { display:flex;align-items:center;gap:14px;padding:20px;border-bottom:1px solid #1a1a1a;position:sticky;top:0;background:var(--bg-dark);z-index:10; }
+      .sub-header button { background:none;border:none;color:white;cursor:pointer;display:flex;align-items:center; }
+      .sub-header h2 { margin:0;font-size:1.3rem;font-weight:700; }
+      .sub-body { padding:20px;display:flex;flex-direction:column;gap:14px; }
+
+      /* Sección titulo */
+      .seccion-titulo { font-size:0.75rem;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px; }
+
+      /* Botón guardar */
+      .btn-guardar { background:white;color:black;border:none;padding:15px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;width:100%;margin-top:6px;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px; }
+      .btn-guardar:hover { opacity:0.85; }
+      .btn-guardar:disabled { opacity:0.4;cursor:not-allowed; }
+
+      /* Botón peligroso */
+      .btn-peligro { background:#1a0000;border:1px solid #440000;color:#ff6b6b;padding:15px;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;width:100%;margin-top:6px;transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px; }
+      .btn-peligro:hover { opacity:0.85; }
+
+      /* Pedidos */
+      .pedido-item { background:#111;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px; }
+      .pedido-top { display:flex;justify-content:space-between;align-items:center; }
+      .pedido-id { font-size:0.75rem;color:var(--text-dim); }
+      .pedido-fecha { font-size:0.75rem;color:var(--text-dim); }
+      .pedido-productos-lista { font-size:0.85rem;color:#bbb;line-height:1.5; }
+      .pedido-bottom { display:flex;justify-content:space-between;align-items:center; }
+      .pedido-total-label { font-weight:700; }
+      .estado-chip { padding:4px 10px;border-radius:20px;font-size:0.72rem;font-weight:600; }
+      .estado-pendiente { background:#2a1f00;color:#ffaa00; }
+      .estado-preparando { background:#001a2a;color:#00aaff; }
+      .estado-enviado { background:#001a0a;color:#00cc66; }
+      .estado-entregado { background:#111;color:#888; }
+
+      /* Select */
+      select.input-field { appearance:none;-webkit-appearance:none; }
+
+      /* Toast */
+      .toast { position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;border:1px solid #333;color:white;padding:12px 24px;border-radius:30px;font-size:0.9rem;opacity:0;transition:all 0.3s;z-index:300;white-space:nowrap; }
+      .toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+
+      /* Admin btn */
+      .btn-admin { display:flex;align-items:center;justify-content:center;gap:10px;margin:0 20px 4px;background:#1a1a1a;border:1px solid #333;color:white;padding:15px;border-radius:14px;font-size:0.95rem;font-weight:600;text-decoration:none;transition:background 0.2s; }
+      .btn-admin:hover { background:#222; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div class="toast" id="toast"></div>
+
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item"><span class="material-icons-outlined">home</span><span>Inicio</span></a>
+      <a href="carrito.html" class="nav-item"><span class="material-icons-outlined">shopping_cart</span><span>Carrito</span></a>
+      <a href="perfil.html" class="nav-item active"><span class="material-icons-outlined">person_outline</span><span>Perfil</span></a>
+    </nav>
+
+    <script type="module">
+      import { supabase } from "./supabaseClient.js";
+
+      const ADMIN_EMAIL = "admicarpincho@gmail.com";
+      const app = document.getElementById("app");
+
+      function toast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(t._t);
+        t._t = setTimeout(() => t.classList.remove("show"), 2500);
+      }
+
+      // ══════════════════════════════
+      // VISTA: LOGIN / REGISTRO
+      // ══════════════════════════════
+      function renderAuth(tabActivo = "login") {
+        app.innerHTML = `
+          <div class="auth-container">
+            <div class="auth-logo">
+              <img src="imagenes/logo-carpincho.png" alt="Carpincho" />
+              <h1>Carpincho.mx</h1>
+              <p>Tu estilo, tu identidad</p>
+            </div>
+            <div class="auth-tabs">
+              <button class="auth-tab ${tabActivo==="login"?"active":""}" id="tab-login">Iniciar Sesión</button>
+              <button class="auth-tab ${tabActivo==="registro"?"active":""}" id="tab-registro">Registrarse</button>
+            </div>
+            <form class="auth-form" id="auth-form">
+              ${tabActivo==="registro" ? `<div class="input-group"><label>Nombre completo</label><input class="input-field" type="text" id="nombre" placeholder="Tu nombre" /></div>` : ""}
+              <div class="input-group"><label>Correo electrónico</label><input class="input-field" type="email" id="email" placeholder="correo@ejemplo.com" /></div>
+              <div class="input-group"><label>Contraseña</label><input class="input-field" type="password" id="password" placeholder="••••••••" /></div>
+              <p class="auth-error" id="auth-error"></p>
+              <button type="submit" class="btn-auth" id="btn-submit">${tabActivo==="login"?"Iniciar Sesión":"Crear Cuenta"}</button>
+            </form>
+          </div>`;
+
+        document.getElementById("tab-login").addEventListener("click", () => renderAuth("login"));
+        document.getElementById("tab-registro").addEventListener("click", () => renderAuth("registro"));
+
+        document.getElementById("auth-form").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById("btn-submit");
+          const errorEl = document.getElementById("auth-error");
+          const email = document.getElementById("email").value.trim();
+          const password = document.getElementById("password").value;
+          btn.disabled = true; btn.textContent = "Cargando..."; errorEl.textContent = "";
+
+          if (tabActivo === "login") {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) { errorEl.textContent = "Correo o contraseña incorrectos."; btn.disabled = false; btn.textContent = "Iniciar Sesión"; }
+            else { toast("✓ Sesión iniciada"); setTimeout(() => iniciarApp(), 500); }
+          } else {
+            const nombre = document.getElementById("nombre")?.value.trim() || "";
+            const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: nombre } } });
+            if (error) { errorEl.textContent = "No se pudo crear la cuenta."; btn.disabled = false; btn.textContent = "Crear Cuenta"; }
+            else { toast("✓ Revisa tu correo para confirmar"); setTimeout(() => renderAuth("login"), 1500); }
+          }
+        });
+      }
+
+      // ══════════════════════════════
+      // VISTA: PERFIL PRINCIPAL
+      // ══════════════════════════════
+      async function renderPerfil(user) {
+        const nombre = user.user_metadata?.full_name || "Usuario Carpincho";
+        const email = user.email || "";
+        const esAdmin = email === ADMIN_EMAIL;
+        const avatarUrl = user.user_metadata?.avatar_url || null;
+
+        // Contar pedidos reales
+        const { count } = await supabase.from("pedidos").select("*", { count:"exact", head:true }).eq("user_id", user.id);
+        const totalPedidos = count || 0;
+
+        app.innerHTML = `
+          <div class="perfil-container">
+            <div class="perfil-header">
+              <a href="javascript:history.back()"><span class="material-icons-outlined">arrow_back</span></a>
+              <h2>Mi Perfil</h2>
+            </div>
+
+            <div class="usuario-info">
+              <div class="avatar-wrapper">
+                <div class="avatar-circulo" id="avatar-display">
+                  ${avatarUrl
+                    ? `<img src="${avatarUrl}" alt="foto" />`
+                    : `<span class="material-icons-outlined">person</span>`}
+                </div>
+                <button class="btn-cambiar-foto" id="btn-foto" title="Cambiar foto">
+                  <span class="material-icons-outlined">photo_camera</span>
+                </button>
+                <input type="file" id="input-foto" accept="image/*" />
+              </div>
+              <div class="usuario-texto">
+                <h3 id="nombre-display">${nombre}</h3>
+                <p>${email}</p>
+              </div>
+            </div>
+
+            <div class="stats-bar">
+              <div class="stat-item" id="stat-ordenes">
+                <span class="stat-numero">${totalPedidos}</span>
+                <span class="stat-label">Órdenes</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-numero">0</span>
+                <span class="stat-label">Favoritos</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-numero">0</span>
+                <span class="stat-label">Reseñas</span>
+              </div>
+            </div>
+
+            ${esAdmin ? `<a href="admin.html" class="btn-admin"><span class="material-icons-outlined" style="color:#888;">admin_panel_settings</span>Panel de Administrador</a>` : ""}
+
+            <div class="menu-lista">
+              <div class="menu-item" id="ir-info">
+                <span class="material-icons-outlined">person_outline</span>
+                <span class="label">Mi Información</span>
+                <span class="material-icons-outlined chevron">chevron_right</span>
+              </div>
+              <div class="menu-item" id="ir-ordenes">
+                <span class="material-icons-outlined">receipt_long</span>
+                <span class="label">Mis Pedidos</span>
+                <span class="material-icons-outlined chevron">chevron_right</span>
+              </div>
+              <div class="menu-item" id="ir-direcciones">
+                <span class="material-icons-outlined">location_on</span>
+                <span class="label">Direcciones</span>
+                <span class="material-icons-outlined chevron">chevron_right</span>
+              </div>
+              <div class="menu-item" id="ir-config">
+                <span class="material-icons-outlined">settings</span>
+                <span class="label">Configuración</span>
+                <span class="material-icons-outlined chevron">chevron_right</span>
+              </div>
+            </div>
+
+            <button class="btn-cerrar-sesion" id="btn-logout">
+              <span class="material-icons-outlined">logout</span>
+              Cerrar Sesión
+            </button>
+            <div class="perfil-footer">
+              <p>Carpincho.mx v1.0.0</p>
+              <a href="#">© 2026 Todos los derechos reservados</a>
+            </div>
+          </div>`;
+
+        // Foto de perfil
+        document.getElementById("btn-foto").addEventListener("click", () => document.getElementById("input-foto").click());
+        document.getElementById("input-foto").addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          toast("Subiendo foto...");
+          const ext = file.name.split(".").pop();
+          const path = `avatars/${user.id}.${ext}`;
+          const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+          if (upErr) { toast("❌ Error al subir foto"); return; }
+          const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+          await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+          document.getElementById("avatar-display").innerHTML = `<img src="${publicUrl}?t=${Date.now()}" alt="foto" style="width:100%;height:100%;object-fit:cover;" />`;
+          toast("✓ Foto actualizada");
+        });
+
+        // Navegación a subpantallas
+        document.getElementById("ir-info").addEventListener("click", () => renderInfo(user));
+        document.getElementById("ir-ordenes").addEventListener("click", () => renderOrdenes(user));
+        document.getElementById("ir-direcciones").addEventListener("click", () => renderDirecciones(user));
+        document.getElementById("ir-config").addEventListener("click", () => renderConfig(user));
+        document.getElementById("stat-ordenes").addEventListener("click", () => renderOrdenes(user));
+
+        document.getElementById("btn-logout").addEventListener("click", async () => {
+          await supabase.auth.signOut();
+          toast("Sesión cerrada");
+          setTimeout(() => renderAuth("login"), 500);
+        });
+      }
+
+      // ══════════════════════════════
+      // SUBPANTALLA: MI INFORMACIÓN
+      // ══════════════════════════════
+      async function renderInfo(user) {
+        // Cargar perfil de la tabla profiles si existe
+        const { data: perfil } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+
+        const nombre = perfil?.full_name || user.user_metadata?.full_name || "";
+        const telefono = perfil?.telefono || "";
+        const nacimiento = perfil?.fecha_nacimiento || "";
+        const genero = perfil?.genero || "";
+
+        app.innerHTML = `
+          <div class="subpantalla">
+            <div class="sub-header">
+              <button id="btn-back"><span class="material-icons-outlined">arrow_back</span></button>
+              <h2>Mi Información</h2>
+            </div>
+            <div class="sub-body">
+              <div class="input-group">
+                <label>Nombre completo</label>
+                <input class="input-field" id="f-nombre" type="text" value="${nombre}" placeholder="Tu nombre" />
+              </div>
+              <div class="input-group">
+                <label>Correo electrónico</label>
+                <input class="input-field" type="email" value="${user.email}" disabled style="opacity:0.5;cursor:not-allowed;" />
+              </div>
+              <div class="input-group">
+                <label>Teléfono</label>
+                <input class="input-field" id="f-telefono" type="tel" value="${telefono}" placeholder="10 dígitos" maxlength="10" />
+              </div>
+              <div class="input-group">
+                <label>Fecha de nacimiento</label>
+                <input class="input-field" id="f-nacimiento" type="date" value="${nacimiento}" />
+              </div>
+              <div class="input-group">
+                <label>Género</label>
+                <select class="input-field" id="f-genero">
+                  <option value="" ${!genero?"selected":""}>Prefiero no decir</option>
+                  <option value="masculino" ${genero==="masculino"?"selected":""}>Masculino</option>
+                  <option value="femenino" ${genero==="femenino"?"selected":""}>Femenino</option>
+                  <option value="no-binario" ${genero==="no-binario"?"selected":""}>No binario</option>
+                </select>
+              </div>
+              <button class="btn-guardar" id="btn-guardar-info">
+                <span class="material-icons-outlined">save</span>
+                Guardar cambios
+              </button>
+            </div>
+          </div>`;
+
+        document.getElementById("btn-back").addEventListener("click", () => renderPerfil(user));
+
+        document.getElementById("btn-guardar-info").addEventListener("click", async () => {
+          const btn = document.getElementById("btn-guardar-info");
+          btn.disabled = true;
+          const nuevoNombre = document.getElementById("f-nombre").value.trim();
+          const tel = document.getElementById("f-telefono").value.trim();
+          const nac = document.getElementById("f-nacimiento").value;
+          const gen = document.getElementById("f-genero").value;
+
+          // Actualizar metadata de auth
+          await supabase.auth.updateUser({ data: { full_name: nuevoNombre } });
+
+          // Upsert en tabla profiles
+          const { error } = await supabase.from("profiles").upsert({
+            id: user.id,
+            full_name: nuevoNombre,
+            telefono: tel,
+            fecha_nacimiento: nac || null,
+            genero: gen,
+            updated_at: new Date().toISOString(),
+          });
+
+          if (error) { toast("❌ Error al guardar"); btn.disabled = false; return; }
+          toast("✓ Información guardada");
+          btn.disabled = false;
+
+          // Actualizar nombre en la vista
+          const userActualizado = (await supabase.auth.getUser()).data.user;
+          setTimeout(() => renderPerfil(userActualizado), 800);
+        });
+      }
+
+      // ══════════════════════════════
+      // SUBPANTALLA: MIS PEDIDOS
+      // ══════════════════════════════
+      async function renderOrdenes(user) {
+        app.innerHTML = `
+          <div class="subpantalla">
+            <div class="sub-header">
+              <button id="btn-back"><span class="material-icons-outlined">arrow_back</span></button>
+              <h2>Mis Pedidos</h2>
+            </div>
+            <div class="sub-body" id="lista-pedidos">
+              <p style="color:var(--text-dim);text-align:center;padding:40px 0;">Cargando pedidos...</p>
+            </div>
+          </div>`;
+
+        document.getElementById("btn-back").addEventListener("click", () => renderPerfil(user));
+
+        const { data: pedidos, error } = await supabase
+          .from("pedidos").select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        const lista = document.getElementById("lista-pedidos");
+
+        if (error || !pedidos || pedidos.length === 0) {
+          lista.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 20px;text-align:center;color:var(--text-dim);">
+              <span class="material-icons-outlined" style="font-size:3rem;color:#333;">receipt_long</span>
+              <p>Aún no tienes pedidos</p>
+              <a href="index.html" style="color:white;font-size:0.9rem;">Explorar productos →</a>
+            </div>`;
+          return;
+        }
+
+        lista.innerHTML = pedidos.map(p => {
+          const productos = JSON.parse(p.productos || "[]");
+          const productosTexto = productos.map(i => `${i.nombre} x${i.cantidad}`).join(", ");
+          const fecha = new Date(p.created_at).toLocaleDateString("es-MX", { day:"2-digit", month:"short", year:"numeric" });
+          const estadoClase = `estado-${p.estado || "pendiente"}`;
+          return `
+            <div class="pedido-item">
+              <div class="pedido-top">
+                <span class="pedido-id">#${String(p.id).slice(0,8).toUpperCase()}</span>
+                <span class="pedido-fecha">${fecha}</span>
+              </div>
+              <p class="pedido-productos-lista">${productosTexto}</p>
+              <div class="pedido-bottom">
+                <span class="pedido-total-label">$${(p.total||0).toLocaleString("es-MX")} MXN</span>
+                <span class="estado-chip ${estadoClase}">${capitalizarEstado(p.estado||"pendiente")}</span>
+              </div>
+            </div>`;
+        }).join("");
+      }
+
+      // ══════════════════════════════
+      // SUBPANTALLA: DIRECCIONES
+      // ══════════════════════════════
+      async function renderDirecciones(user) {
+        const { data: perfil } = await supabase.from("profiles").select("direccion").eq("id", user.id).maybeSingle();
+        const dir = perfil?.direccion || "";
+
+        app.innerHTML = `
+          <div class="subpantalla">
+            <div class="sub-header">
+              <button id="btn-back"><span class="material-icons-outlined">arrow_back</span></button>
+              <h2>Direcciones</h2>
+            </div>
+            <div class="sub-body">
+              <p class="seccion-titulo">Dirección principal</p>
+              <div class="input-group">
+                <label>Calle y número</label>
+                <input class="input-field" id="d-calle" type="text" value="${dir}" placeholder="Ej: Av. Colón 123" />
+              </div>
+              <div class="input-group">
+                <label>Ciudad / Municipio</label>
+                <input class="input-field" id="d-ciudad" type="text" placeholder="Ej: Orizaba" />
+              </div>
+              <div class="input-group">
+                <label>Estado</label>
+                <input class="input-field" id="d-estado" type="text" placeholder="Ej: Veracruz" />
+              </div>
+              <div class="input-group">
+                <label>Código Postal</label>
+                <input class="input-field" id="d-cp" type="text" placeholder="5 dígitos" maxlength="5" />
+              </div>
+              <div class="input-group">
+                <label>Referencias</label>
+                <input class="input-field" id="d-ref" type="text" placeholder="Entre calles, color de casa..." />
+              </div>
+              <button class="btn-guardar" id="btn-guardar-dir">
+                <span class="material-icons-outlined">save</span>
+                Guardar dirección
+              </button>
+            </div>
+          </div>`;
+
+        document.getElementById("btn-back").addEventListener("click", () => renderPerfil(user));
+
+        document.getElementById("btn-guardar-dir").addEventListener("click", async () => {
+          const btn = document.getElementById("btn-guardar-dir");
+          btn.disabled = true;
+          const calle  = document.getElementById("d-calle").value.trim();
+          const ciudad = document.getElementById("d-ciudad").value.trim();
+          const estado = document.getElementById("d-estado").value.trim();
+          const cp     = document.getElementById("d-cp").value.trim();
+          const ref    = document.getElementById("d-ref").value.trim();
+
+          const direccionCompleta = [calle, ciudad, estado, cp, ref].filter(Boolean).join(", ");
+
+          const { error } = await supabase.from("profiles").upsert({
+            id: user.id,
+            direccion: direccionCompleta,
+            updated_at: new Date().toISOString(),
+          });
+
+          if (error) { toast("❌ Error al guardar"); btn.disabled = false; return; }
+          toast("✓ Dirección guardada");
+          btn.disabled = false;
+        });
+      }
+
+      // ══════════════════════════════
+      // SUBPANTALLA: CONFIGURACIÓN
+      // ══════════════════════════════
+      function renderConfig(user) {
+        app.innerHTML = `
+          <div class="subpantalla">
+            <div class="sub-header">
+              <button id="btn-back"><span class="material-icons-outlined">arrow_back</span></button>
+              <h2>Configuración</h2>
+            </div>
+            <div class="sub-body">
+              <p class="seccion-titulo">Cambiar contraseña</p>
+              <div class="input-group">
+                <label>Nueva contraseña</label>
+                <input class="input-field" id="nueva-pass" type="password" placeholder="Mínimo 6 caracteres" />
+              </div>
+              <div class="input-group">
+                <label>Confirmar contraseña</label>
+                <input class="input-field" id="confirmar-pass" type="password" placeholder="Repite la contraseña" />
+              </div>
+              <p id="pass-error" style="color:#ff6b6b;font-size:0.85rem;min-height:18px;"></p>
+              <button class="btn-guardar" id="btn-cambiar-pass">
+                <span class="material-icons-outlined">lock</span>
+                Cambiar contraseña
+              </button>
+
+              <div style="margin-top:30px;">
+                <p class="seccion-titulo" style="color:#ff6b6b;">Zona de peligro</p>
+                <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:12px;">
+                  Al eliminar tu cuenta se borrarán todos tus datos permanentemente.
+                </p>
+                <button class="btn-peligro" id="btn-eliminar">
+                  <span class="material-icons-outlined">delete_forever</span>
+                  Eliminar mi cuenta
+                </button>
+              </div>
+            </div>
+          </div>`;
+
+        document.getElementById("btn-back").addEventListener("click", () => renderPerfil(user));
+
+        // Cambiar contraseña
+        document.getElementById("btn-cambiar-pass").addEventListener("click", async () => {
+          const nueva = document.getElementById("nueva-pass").value;
+          const confirmar = document.getElementById("confirmar-pass").value;
+          const errEl = document.getElementById("pass-error");
+
+          if (nueva.length < 6) { errEl.textContent = "Mínimo 6 caracteres."; return; }
+          if (nueva !== confirmar) { errEl.textContent = "Las contraseñas no coinciden."; return; }
+          errEl.textContent = "";
+
+          const { error } = await supabase.auth.updateUser({ password: nueva });
+          if (error) { errEl.textContent = "Error: " + error.message; return; }
+          toast("✓ Contraseña actualizada");
+          document.getElementById("nueva-pass").value = "";
+          document.getElementById("confirmar-pass").value = "";
+        });
+
+        // Eliminar cuenta
+        document.getElementById("btn-eliminar").addEventListener("click", async () => {
+          const confirmar = window.confirm("¿Estás segura/o? Esta acción no se puede deshacer.");
+          if (!confirmar) return;
+          // Borrar datos del perfil
+          await supabase.from("profiles").delete().eq("id", user.id);
+          await supabase.from("favoritos").delete().eq("user_id", user.id);
+          await supabase.auth.signOut();
+          toast("Cuenta eliminada");
+          setTimeout(() => renderAuth("login"), 800);
+        });
+      }
+
+      // ── HELPERS ──
+      function capitalizarEstado(e) {
+        const map = { pendiente:"⏳ Pendiente", preparando:"📦 Preparando", enviado:"🚚 Enviado", entregado:"✅ Entregado" };
+        return map[e] || e;
+      }
+
+      // ── MOTOR ──
+      async function iniciarApp() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) renderPerfil(user);
+        else renderAuth("login");
+      }
+
+      iniciarApp();
+    </script>
+  </body>
+</html>

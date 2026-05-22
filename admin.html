@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carpincho.mx | Admin</title>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <style>
+      .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid #1a1a1a;
+        position: sticky;
+        top: 0;
+        background: var(--bg-dark);
+        z-index: 10;
+      }
+      .admin-header-left { display: flex; align-items: center; gap: 14px; }
+      .admin-header a { color: white; text-decoration: none; }
+      .admin-header h2 { margin: 0; font-size: 1.3rem; font-weight: 700; }
+
+      /* Tabs de filtro */
+      .admin-tabs {
+        display: flex;
+        gap: 8px;
+        padding: 14px 20px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        border-bottom: 1px solid #111;
+      }
+      .admin-tabs::-webkit-scrollbar { display: none; }
+
+      .tab-btn {
+        background: #111;
+        border: 1px solid #222;
+        color: var(--text-dim);
+        padding: 7px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+      .tab-btn.active { background: white; color: black; border-color: white; font-weight: 700; }
+
+      /* Stats rápidas */
+      .admin-stats {
+        display: flex;
+        gap: 10px;
+        padding: 14px 20px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .admin-stats::-webkit-scrollbar { display: none; }
+
+      .stat-card {
+        background: #111;
+        border-radius: 12px;
+        padding: 14px 18px;
+        min-width: 110px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .stat-card .s-num { font-size: 1.5rem; font-weight: 800; }
+      .stat-card .s-label { font-size: 0.75rem; color: var(--text-dim); }
+
+      /* Grupos por ciudad */
+      .grupo-ciudad {
+        margin: 0 20px 20px;
+      }
+
+      .ciudad-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: #111;
+        border-radius: 12px 12px 0 0;
+        border-bottom: 1px solid #1a1a1a;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .ciudad-header-left { display: flex; align-items: center; gap: 10px; }
+      .ciudad-nombre { font-weight: 700; font-size: 0.95rem; }
+      .ciudad-badge {
+        background: #222;
+        color: var(--text-dim);
+        border-radius: 20px;
+        padding: 2px 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+      .ciudad-total { font-size: 0.85rem; color: var(--text-dim); }
+
+      .ciudad-pedidos { display: flex; flex-direction: column; }
+
+      /* Tarjeta de pedido */
+      .pedido-card {
+        background: #0f0f0f;
+        border: 1px solid #1a1a1a;
+        border-top: none;
+        padding: 14px;
+        transition: background 0.15s;
+        cursor: pointer;
+      }
+      .pedido-card:last-child { border-radius: 0 0 12px 12px; }
+      .pedido-card:hover { background: #141414; }
+
+      .pedido-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+      }
+
+      .pedido-cliente { font-weight: 700; font-size: 0.95rem; }
+      .pedido-fecha { font-size: 0.75rem; color: var(--text-dim); }
+
+      .pedido-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 0.82rem;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+      .pedido-meta span { display: flex; align-items: center; gap: 4px; }
+      .pedido-meta .material-icons-outlined { font-size: 0.9rem; }
+
+      .pedido-productos {
+        font-size: 0.82rem;
+        color: #888;
+        line-height: 1.5;
+        margin-bottom: 10px;
+      }
+
+      .pedido-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .pedido-total { font-weight: 700; font-size: 1rem; }
+
+      /* Estado del pedido */
+      .estado-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: opacity 0.2s;
+      }
+      .estado-badge:hover { opacity: 0.8; }
+      .estado-pendiente  { background: #2a1f00; color: #ffaa00; }
+      .estado-preparando { background: #001a2a; color: #00aaff; }
+      .estado-enviado    { background: #001a0a; color: #00cc66; }
+      .estado-entregado  { background: #111; color: #888; }
+
+      /* Buscador admin */
+      .admin-search {
+        padding: 0 20px 14px;
+      }
+
+      /* Vacío */
+      .admin-vacio {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 50vh;
+        gap: 12px;
+        color: var(--text-dim);
+        text-align: center;
+        padding: 30px;
+      }
+      .admin-vacio .material-icons-outlined { font-size: 3rem; color: #333; }
+
+      /* Modal detalle pedido */
+      .modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.8);
+        z-index: 300;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .modal-overlay.visible { display: flex; }
+
+      .modal-box {
+        background: #0f0f0f;
+        border-radius: 20px 20px 0 0;
+        width: 100%;
+        max-width: 600px;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 24px 20px 40px;
+        border: 1px solid #1a1a1a;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .modal-header h3 { margin: 0; font-size: 1.1rem; font-weight: 700; }
+
+      .btn-modal-cerrar {
+        background: #1a1a1a; border: none; color: white;
+        border-radius: 50%; width: 32px; height: 32px;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+      }
+
+      .modal-dato {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 12px 0;
+        border-bottom: 1px solid #1a1a1a;
+      }
+      .modal-dato:last-child { border-bottom: none; }
+      .modal-dato label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+      .modal-dato p { margin: 0; font-size: 0.95rem; font-weight: 500; }
+
+      .btn-whatsapp {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; margin-top: 16px;
+        background: #25D366; color: white; border: none;
+        padding: 14px; border-radius: 12px; font-size: 0.95rem;
+        font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+        text-decoration: none;
+      }
+      .btn-whatsapp:hover { opacity: 0.88; }
+
+      .toast {
+        position: fixed; bottom: 30px; left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #1a1a1a; border: 1px solid #333; color: white;
+        padding: 12px 24px; border-radius: 30px; font-size: 0.9rem;
+        opacity: 0; transition: all 0.3s; z-index: 400; white-space: nowrap;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+  </head>
+  <body>
+
+    <div class="admin-header">
+      <div class="admin-header-left">
+        <a href="perfil.html">
+          <span class="material-icons-outlined">arrow_back</span>
+        </a>
+        <h2>Panel Admin</h2>
+      </div>
+      <span class="material-icons-outlined" style="color:#555;">admin_panel_settings</span>
+    </div>
+
+    <div id="app-admin">
+      <div class="admin-vacio">
+        <span class="material-icons-outlined">hourglass_empty</span>
+        <p>Cargando pedidos...</p>
+      </div>
+    </div>
+
+    <!-- Modal detalle -->
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal-box" id="modal-box"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script type="module">
+      import { supabase } from "./supabaseClient.js";
+
+      const ADMIN_EMAIL = "admicarpincho@gmail.com"; // ← igual que en perfil.html
+      let todosLosPedidos = [];
+      let filtroEstado = "todos";
+      let filtroBusqueda = "";
+
+      function toast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        clearTimeout(t._t);
+        t._t = setTimeout(() => t.classList.remove("show"), 2500);
+      }
+
+      // ── VERIFICAR QUE SEA ADMIN ──
+      async function verificarAdmin() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || user.email !== ADMIN_EMAIL) {
+          document.getElementById("app-admin").innerHTML = `
+            <div class="admin-vacio">
+              <span class="material-icons-outlined">lock</span>
+              <p>Acceso restringido.</p>
+              <a href="index.html" style="color:white;margin-top:8px;">← Volver al inicio</a>
+            </div>`;
+          return false;
+        }
+        return true;
+      }
+
+      // ── CARGAR PEDIDOS ──
+      async function cargarPedidos() {
+        const { data, error } = await supabase
+          .from("pedidos")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) { console.error(error); return; }
+        todosLosPedidos = data || [];
+        renderizar();
+      }
+
+      // ── RENDERIZAR TODO ──
+      function renderizar() {
+        const app = document.getElementById("app-admin");
+
+        let pedidos = todosLosPedidos;
+
+        // Filtro por estado
+        if (filtroEstado !== "todos") {
+          pedidos = pedidos.filter(p => p.estado === filtroEstado);
+        }
+
+        // Filtro por búsqueda
+        if (filtroBusqueda) {
+          const q = filtroBusqueda.toLowerCase();
+          pedidos = pedidos.filter(p =>
+            p.nombre_cliente?.toLowerCase().includes(q) ||
+            p.ciudad?.toLowerCase().includes(q) ||
+            p.telefono?.includes(q)
+          );
+        }
+
+        // Stats
+        const total = todosLosPedidos.length;
+        const pendientes = todosLosPedidos.filter(p => p.estado === "pendiente").length;
+        const enviados = todosLosPedidos.filter(p => p.estado === "enviado").length;
+        const ingresos = todosLosPedidos.reduce((s, p) => s + (p.total || 0), 0);
+
+        // Agrupar por ciudad
+        const porCiudad = {};
+        pedidos.forEach(p => {
+          const ciudad = (p.ciudad || "Sin ciudad").trim();
+          if (!porCiudad[ciudad]) porCiudad[ciudad] = [];
+          porCiudad[ciudad].push(p);
+        });
+
+        // Ordenar ciudades por cantidad de pedidos
+        const ciudadesOrdenadas = Object.keys(porCiudad).sort(
+          (a, b) => porCiudad[b].length - porCiudad[a].length
+        );
+
+        if (pedidos.length === 0) {
+          app.innerHTML = `
+            <div style="padding:14px 20px 0;">
+              ${renderStats(total, pendientes, enviados, ingresos)}
+              ${renderTabs()}
+              ${renderBuscador()}
+            </div>
+            <div class="admin-vacio">
+              <span class="material-icons-outlined">inbox</span>
+              <p>No hay pedidos aún</p>
+            </div>`;
+          reactivarFiltros();
+          return;
+        }
+
+        const gruposHTML = ciudadesOrdenadas.map(ciudad => {
+          const pedidosCiudad = porCiudad[ciudad];
+          const totalCiudad = pedidosCiudad.reduce((s, p) => s + (p.total || 0), 0);
+
+          const pedidosHTML = pedidosCiudad.map(p => renderPedidoCard(p)).join("");
+
+          return `
+            <div class="grupo-ciudad">
+              <div class="ciudad-header" data-ciudad="${ciudad}">
+                <div class="ciudad-header-left">
+                  <span class="material-icons-outlined" style="color:#555;font-size:1.1rem;">location_on</span>
+                  <span class="ciudad-nombre">${ciudad}</span>
+                  <span class="ciudad-badge">${pedidosCiudad.length} pedido${pedidosCiudad.length !== 1 ? "s" : ""}</span>
+                </div>
+                <span class="ciudad-total">$${totalCiudad.toLocaleString("es-MX")}</span>
+              </div>
+              <div class="ciudad-pedidos" id="grupo-${ciudad.replace(/\s/g,"-")}">${pedidosHTML}</div>
+            </div>`;
+        }).join("");
+
+        app.innerHTML = `
+          <div style="padding:14px 20px 0;">
+            ${renderStats(total, pendientes, enviados, ingresos)}
+            ${renderTabs()}
+            ${renderBuscador()}
+          </div>
+          <div style="padding-bottom:30px;">${gruposHTML}</div>`;
+
+        reactivarFiltros();
+        activarEventosPedidos();
+        activarColapsarCiudades();
+      }
+
+      function renderStats(total, pendientes, enviados, ingresos) {
+        return `
+          <div class="admin-stats">
+            <div class="stat-card">
+              <span class="s-num">${total}</span>
+              <span class="s-label">Total pedidos</span>
+            </div>
+            <div class="stat-card">
+              <span class="s-num" style="color:#ffaa00;">${pendientes}</span>
+              <span class="s-label">Pendientes</span>
+            </div>
+            <div class="stat-card">
+              <span class="s-num" style="color:#00cc66;">${enviados}</span>
+              <span class="s-label">Enviados</span>
+            </div>
+            <div class="stat-card">
+              <span class="s-num" style="color:white;">$${(ingresos/1000).toFixed(1)}k</span>
+              <span class="s-label">Ingresos</span>
+            </div>
+          </div>`;
+      }
+
+      function renderTabs() {
+        const estados = ["todos","pendiente","preparando","enviado","entregado"];
+        const labels  = ["Todos","Pendientes","Preparando","Enviados","Entregados"];
+        return `<div class="admin-tabs">
+          ${estados.map((e,i) => `
+            <button class="tab-btn ${filtroEstado === e ? "active" : ""}" data-estado="${e}">${labels[i]}</button>
+          `).join("")}
+        </div>`;
+      }
+
+      function renderBuscador() {
+        return `<div class="admin-search">
+          <input class="search-bar" id="admin-buscar" type="text"
+            placeholder="Buscar por nombre, ciudad, teléfono..."
+            value="${filtroBusqueda}" style="margin-bottom:0;" />
+        </div>`;
+      }
+
+      function renderPedidoCard(p) {
+        const fecha = new Date(p.created_at).toLocaleDateString("es-MX", {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+        const productos = JSON.parse(p.productos || "[]");
+        const productosTexto = productos.map(i => `${i.nombre} x${i.cantidad}`).join(", ");
+        const estadoClase = `estado-${p.estado || "pendiente"}`;
+
+        return `
+          <div class="pedido-card" data-id="${p.id}">
+            <div class="pedido-top">
+              <span class="pedido-cliente">${p.nombre_cliente || "Sin nombre"}</span>
+              <span class="pedido-fecha">${fecha}</span>
+            </div>
+            <div class="pedido-meta">
+              <span><span class="material-icons-outlined">phone</span>${p.telefono || "—"}</span>
+              <span><span class="material-icons-outlined">home</span>${p.direccion ? p.direccion.slice(0,30) + "..." : "—"}</span>
+            </div>
+            <p class="pedido-productos">${productosTexto}</p>
+            <div class="pedido-footer">
+              <span class="pedido-total">$${(p.total || 0).toLocaleString("es-MX")} MXN</span>
+              <button class="estado-badge ${estadoClase}" data-pedido-id="${p.id}" data-estado-actual="${p.estado || "pendiente"}">
+                ${capitalizarEstado(p.estado || "pendiente")}
+              </button>
+            </div>
+          </div>`;
+      }
+
+      function capitalizarEstado(e) {
+        const map = { pendiente:"⏳ Pendiente", preparando:"📦 Preparando", enviado:"🚚 Enviado", entregado:"✅ Entregado" };
+        return map[e] || e;
+      }
+
+      // ── EVENTOS ──
+      function reactivarFiltros() {
+        // Tabs
+        document.querySelectorAll(".tab-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            filtroEstado = btn.dataset.estado;
+            renderizar();
+          });
+        });
+        // Buscador
+        const buscador = document.getElementById("admin-buscar");
+        if (buscador) {
+          buscador.addEventListener("input", (e) => {
+            filtroBusqueda = e.target.value.trim();
+            clearTimeout(buscador._t);
+            buscador._t = setTimeout(renderizar, 250);
+          });
+        }
+      }
+
+      function activarColapsarCiudades() {
+        document.querySelectorAll(".ciudad-header").forEach(header => {
+          header.addEventListener("click", () => {
+            const ciudad = header.dataset.ciudad;
+            const grupo = document.getElementById(`grupo-${ciudad.replace(/\s/g,"-")}`);
+            if (grupo) {
+              const oculto = grupo.style.display === "none";
+              grupo.style.display = oculto ? "flex" : "none";
+              grupo.style.flexDirection = "column";
+            }
+          });
+        });
+      }
+
+      function activarEventosPedidos() {
+        // Clic en tarjeta → abrir modal
+        document.querySelectorAll(".pedido-card").forEach(card => {
+          card.addEventListener("click", (e) => {
+            if (e.target.closest(".estado-badge")) return;
+            const id = card.dataset.id;
+            const pedido = todosLosPedidos.find(p => String(p.id) === String(id));
+            if (pedido) abrirModal(pedido);
+          });
+        });
+
+        // Cambiar estado
+        document.querySelectorAll(".estado-badge").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.pedidoId;
+            const estados = ["pendiente","preparando","enviado","entregado"];
+            const actual = btn.dataset.estadoActual;
+            const siguiente = estados[(estados.indexOf(actual) + 1) % estados.length];
+
+            await supabase.from("pedidos").update({ estado: siguiente }).eq("id", id);
+            const pedido = todosLosPedidos.find(p => String(p.id) === String(id));
+            if (pedido) pedido.estado = siguiente;
+            toast(`Estado → ${capitalizarEstado(siguiente)}`);
+            renderizar();
+          });
+        });
+      }
+
+      // ── MODAL DETALLE ──
+      function abrirModal(p) {
+        const productos = JSON.parse(p.productos || "[]");
+        const productosDetalle = productos.map(i =>
+          `${i.nombre} (${i.talla}${i.color ? ", "+i.color : ""}) x${i.cantidad} — $${(i.precio*i.cantidad).toLocaleString("es-MX")}`
+        ).join("\n");
+
+        const fecha = new Date(p.created_at).toLocaleString("es-MX");
+
+        const mensajeWA = encodeURIComponent(
+`Hola ${p.nombre_cliente}, te contacto de Carpincho.mx sobre tu pedido 🛍️`
+        );
+
+        document.getElementById("modal-box").innerHTML = `
+          <div class="modal-header">
+            <h3>Detalle del pedido</h3>
+            <button class="btn-modal-cerrar" id="btn-cerrar-modal">
+              <span class="material-icons-outlined">close</span>
+            </button>
+          </div>
+          <div class="modal-dato"><label>Cliente</label><p>${p.nombre_cliente}</p></div>
+          <div class="modal-dato"><label>Ciudad</label><p>${p.ciudad}</p></div>
+          <div class="modal-dato"><label>Teléfono</label><p>${p.telefono}</p></div>
+          <div class="modal-dato"><label>Dirección</label><p>${p.direccion}</p></div>
+          ${p.notas ? `<div class="modal-dato"><label>Notas</label><p>${p.notas}</p></div>` : ""}
+          <div class="modal-dato"><label>Productos</label><p style="white-space:pre-line;">${productosDetalle}</p></div>
+          <div class="modal-dato"><label>Total</label><p style="font-size:1.1rem;font-weight:800;">$${(p.total||0).toLocaleString("es-MX")} MXN</p></div>
+          <div class="modal-dato"><label>Fecha</label><p>${fecha}</p></div>
+          <div class="modal-dato"><label>Estado</label><p><span class="estado-badge estado-${p.estado||"pendiente"}">${capitalizarEstado(p.estado||"pendiente")}</span></p></div>
+          <a class="btn-whatsapp" href="https://wa.me/${p.telefono?.replace(/\D/g,"")}?text=${mensajeWA}" target="_blank">
+            <span class="material-icons-outlined">chat</span>
+            Contactar por WhatsApp
+          </a>`;
+
+        document.getElementById("modal-overlay").classList.add("visible");
+        document.getElementById("btn-cerrar-modal").addEventListener("click", cerrarModal);
+      }
+
+      function cerrarModal() {
+        document.getElementById("modal-overlay").classList.remove("visible");
+      }
+
+      document.getElementById("modal-overlay").addEventListener("click", (e) => {
+        if (e.target === document.getElementById("modal-overlay")) cerrarModal();
+      });
+
+      // ── INICIAR ──
+      const esAdmin = await verificarAdmin();
+      if (esAdmin) cargarPedidos();
+    </script>
+  </body>
+</html>

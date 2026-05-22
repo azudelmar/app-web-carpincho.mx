@@ -1,0 +1,89 @@
+<!doctype html>
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Carpincho.mx | Tu estilo</title>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="logo-section">
+        <img
+          src="imagenes/logo-carpincho.png"
+          alt="Carpincho Logo"
+          class="logo-img"
+        />
+
+        <div>
+          <h1>Carpincho.mx</h1>
+
+          <p>Tu estilo, tu identidad</p>
+        </div>
+      </div>
+
+      <div class="heart-wrapper">
+        <span class="material-icons-outlined">favorite_border</span>
+        <span class="badge-count"></span>
+      </div>
+    </header>
+
+    <div class="search-container">
+      <input type="text" placeholder="Buscar productos..." class="search-bar" />
+    </div>
+
+    <nav class="category-chips">
+      <button class="chip active" data-categoria="todos">✨ Todos</button>
+      <button class="chip" data-categoria="caballero">👕 Caballero</button>
+      <button class="chip" data-categoria="dama">👗 Dama</button>
+      <button class="chip" data-categoria="unisex">⚧️ Unisex</button>
+    </nav>
+
+    <main class="main-content">
+      <section class="banner">
+        <div class="banner-text">
+          <h2>Nueva Colección</h2>
+          <p>Primavera 2026</p>
+        </div>
+      </section>
+
+      <div style="padding: 0 12px">
+        <p
+          id="contador-productos"
+          style="color: var(--text-dim); font-size: 0.85rem; margin: 8px 0 0"
+        ></p>
+      </div>
+
+      <div id="lista-productos" class="grid-productos">
+        <p>Cargando catálogo...</p>
+      </div>
+    </main>
+
+    <nav class="bottom-nav">
+      <a href="index.html" class="nav-item active">
+        <span class="material-icons-outlined">home</span>
+        <span>Inicio</span>
+      </a>
+      <a href="carrito.html" class="nav-item">
+        <span class="material-icons-outlined">shopping_cart</span>
+        <span>Carrito</span>
+      </a>
+      <a href="perfil.html" class="nav-item">
+        <span class="material-icons-outlined">person_outline</span>
+        <span>Perfil</span>
+      </a>
+    </nav>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
